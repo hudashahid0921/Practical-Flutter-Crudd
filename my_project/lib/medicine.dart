@@ -138,7 +138,7 @@ class _MyMedicineState extends State<MyMedicine> {
                                 "Update",
                                 style: TextStyle(fontSize: 14), // Increased font size
                               ),
-                              JHBHJKGFX
+                            
                             ),
                             ElevatedButton(
                               onPressed: () => deleteMedicine(doc.id),
