@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:my_project/addmedicine.dart';  // Correct import
+import 'package:my_project/addmedicine.dart';
+import 'package:my_project/auth.dart';
 import 'package:my_project/firebase_options.dart';
-import 'package:my_project/medicine.dart';  // Ensure only this contains MyMedicine
+import 'package:my_project/medicine.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,10 +24,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyMedicine(),  // Ensure this comes only from medicine.dart
+      home: const Signup(),
       debugShowCheckedModeBanner: false,
       routes: {
-        '/addmedicine': (context) => const AddMedicine(),  // Ensure AddMedicine is imported properly
+        '/addmedicine': (context) => const AddMedicine(),
       },
     );
   }

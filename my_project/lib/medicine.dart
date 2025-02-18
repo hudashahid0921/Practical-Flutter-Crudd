@@ -10,42 +10,28 @@ class MyMedicine extends StatefulWidget {
 
 class _MyMedicineState extends State<MyMedicine> {
   Stream<QuerySnapshot> medicines =
-      FirebaseFirestore.instance.collection("Medicine").snapshots();
+      FirebaseFirestore.instance.collection("AddMedicine").snapshots(); // ✅ Correct database name
 
   void deleteMedicine(String documentId) async {
-    await FirebaseFirestore.instance
-        .collection('Medicine')
-        .doc(documentId)
-        .delete();
-
+    await FirebaseFirestore.instance.collection('AddMedicine').doc(documentId).delete();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Medicine deleted successfully!")),
     );
   }
 
-  void updateMedicine(String documentId) async {
+  void updateMedicine(String documentId) {
     Navigator.pushNamed(context, '/addmedicine', arguments: documentId);
   }
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-
-    // Adjust number of columns based on screen size
-    int crossAxisCount = screenWidth < 600 ? 2 : 4;  // Use 2 columns on small screens, 4 on large screens
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Available Medicines",
-          style: TextStyle(fontSize: 24), // Increased font size for app bar title
-        ),
+        title: const Text("Available Medicines", style: TextStyle(fontSize: 24)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, size: 35),  // Increased icon size
-            onPressed: () {
-              Navigator.pushNamed(context, "/addmedicine");
-            },
+            icon: const Icon(Icons.add, size: 35),
+            onPressed: () => Navigator.pushNamed(context, "/addmedicine"),
           ),
         ],
       ),
@@ -59,108 +45,40 @@ class _MyMedicineState extends State<MyMedicine> {
             return const Center(child: Text("No medicines available!"));
           }
 
-          return Padding(
-            padding: const EdgeInsets.all(6.0),
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 6,
-                mainAxisSpacing: 6,
-                childAspectRatio: 1.9, // Adjust child aspect ratio based on screen size
-              ),
-              itemCount: snapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                var doc = snapshot.data!.docs[index];
+          return ListView.builder(
+            padding: const EdgeInsets.all(10),
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) {
+              var doc = snapshot.data!.docs[index];
 
-                return Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  leading: const Icon(Icons.medical_services, color: Colors.blue, size: 30),
+                  title: Text(doc["Title"], style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(doc["Description"], maxLines: 2, overflow: TextOverflow.ellipsis),
+                      Text("\$${doc["Price"]}", style: const TextStyle(color: Colors.green)),
+                    ],
                   ),
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.medical_services,
-                              size: 24, // Increased icon size
-                              color: Colors.blue,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                doc["Title"],
-                                style: const TextStyle(
-                                  fontSize: 16, // Increased font size
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          doc["Description"],
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12, // Increased font size
-                            color: Colors.black54,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "\$${doc["Price"].toString()}",
-                          style: const TextStyle(
-                            fontSize: 14, // Increased font size
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () => updateMedicine(doc.id),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.black,
-                                backgroundColor: Colors.grey[300],
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 30, vertical: 6), // Increased padding
-                              ),
-                              child: const Text(
-                                "Update",
-                                style: TextStyle(fontSize: 14), // Increased font size
-                              ),
-                            
-                            ),
-                            ElevatedButton(
-                              onPressed: () => deleteMedicine(doc.id),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.black,
-                                backgroundColor: Colors.red[300],
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 30, vertical: 6), // Increased padding
-                              ),
-                              child: const Text(
-                                "Delete",
-                                style: TextStyle(fontSize: 14), // Increased font size
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.orange),
+                        onPressed: () => updateMedicine(doc.id),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => deleteMedicine(doc.id),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           );
         },
       ),

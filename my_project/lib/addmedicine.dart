@@ -12,7 +12,7 @@ class _AddMedicineState extends State<AddMedicine> {
   final TextEditingController _medicineNameController = TextEditingController();
   final TextEditingController _medicineDescController = TextEditingController();
   final TextEditingController _medicinePriceController = TextEditingController();
-  final CollectionReference medicines = FirebaseFirestore.instance.collection('Medicine');
+  final CollectionReference medicines = FirebaseFirestore.instance.collection('AddMedicine'); // ✅ Correct database name
   String? documentId;
 
   @override
@@ -27,27 +27,27 @@ class _AddMedicineState extends State<AddMedicine> {
 
   Future<void> _loadMedicineData() async {
     DocumentSnapshot doc = await medicines.doc(documentId).get();
-    _medicineNameController.text = doc["Title"];
-    _medicineDescController.text = doc["Description"];
-    _medicinePriceController.text = doc["Price"].toString();
+    if (doc.exists) {
+      setState(() {
+        _medicineNameController.text = doc["Title"];
+        _medicineDescController.text = doc["Description"];
+        _medicinePriceController.text = doc["Price"].toString();
+      });
+    }
   }
 
   Future<void> addOrUpdateMedicine() async {
-    String medicineTitle = _medicineNameController.text.trim();
-    String description = _medicineDescController.text.trim();
-    String priceText = _medicinePriceController.text.trim();
-
-    if (medicineTitle.isEmpty || description.isEmpty || priceText.isEmpty) {
+    if (_medicineNameController.text.isEmpty ||
+        _medicineDescController.text.isEmpty ||
+        _medicinePriceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("All fields are required!")),
       );
       return;
     }
 
-    int? price;
-    try {
-      price = int.parse(priceText);
-    } catch (e) {
+    int? price = int.tryParse(_medicinePriceController.text);
+    if (price == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Invalid price! Enter a valid number.")),
       );
@@ -56,8 +56,8 @@ class _AddMedicineState extends State<AddMedicine> {
 
     if (documentId == null) {
       await medicines.add({
-        'Title': medicineTitle,
-        'Description': description,
+        'Title': _medicineNameController.text,
+        'Description': _medicineDescController.text,
         'Price': price,
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -65,8 +65,8 @@ class _AddMedicineState extends State<AddMedicine> {
       );
     } else {
       await medicines.doc(documentId).update({
-        'Title': medicineTitle,
-        'Description': description,
+        'Title': _medicineNameController.text,
+        'Description': _medicineDescController.text,
         'Price': price,
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -77,10 +77,46 @@ class _AddMedicineState extends State<AddMedicine> {
     Navigator.pop(context);
   }
 
+  void showMedicineInfo() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Medicine Details"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("📝 Name: ${_medicineNameController.text}"),
+              const SizedBox(height: 5),
+              Text("📄 Description: ${_medicineDescController.text}"),
+              const SizedBox(height: 5),
+              Text("💰 Price: \$${_medicinePriceController.text}"),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(documentId == null ? "Add Medicine" : "Update Medicine")),
+      appBar: AppBar(
+        title: Text(documentId == null ? "Add Medicine" : "Update Medicine"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline, size: 28), // ℹ️ Info icon
+            onPressed: showMedicineInfo, // Show details in dialog box
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
