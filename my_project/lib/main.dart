@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:my_project/addmedicine.dart';
 import 'package:my_project/auth.dart';
-import 'package:my_project/firebase_options.dart';
-import 'package:my_project/medicine.dart';
+import 'package:my_project/firebase_options.dart'; 
+import 'package:my_project/medicine.dart'; 
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,15 +20,21 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Medicine Store',
+      title: 'Medicine',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Signup(),
       debugShowCheckedModeBanner: false,
+
+      // Home screen (initial screen when app starts)
+      home: FirebaseAuth.instance.currentUser == null ? const Signup() : const MyMedicine(),
+
+      // Routes setup
       routes: {
         '/addmedicine': (context) => const AddMedicine(),
+        '/login': (context) => const Login(),
+        '/home': (context) => const MyMedicine(), // Home screen after login
       },
     );
   }

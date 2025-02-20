@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+FirebaseAuth auth = FirebaseAuth.instance;
 class Signup extends StatefulWidget {
   const Signup({super.key});
 
@@ -13,90 +13,75 @@ class _SignupState extends State<Signup> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
 
-  Future<void> signUpUser() async {
+  signUpUser() async {
     String name = nameController.text.trim();
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
-    String phone = phoneController.text.trim();
 
-    print("🚀 Sign Up Button Pressed");
-
-    if (name.isEmpty || email.isEmpty || password.isEmpty || phone.isEmpty) {
-      print("❌ Error: All fields are required.");
+    // Validate input fields
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("All fields are required!")),
       );
       return;
     }
-    if (!email.contains("@") || !email.contains(".")) {
-      print("❌ Error: Invalid Email Format");
+
+    // Basic email validation
+    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        .hasMatch(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter a valid email!")),
-      );
-      return;
-    }
-    if (password.length < 6) {
-      print("❌ Error: Password too short");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password must be at least 6 characters long!")),
+        const SnackBar(content: Text("Please enter a valid email address!")),
       );
       return;
     }
 
     try {
-      print("🔥 Creating User in Firebase Authentication...");
 
-      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // print("zainnnnnnn");
+      // Create user with email and password
+      final userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      print("✅ Firebase Authentication Success! User ID: ${userCredential.user!.uid}");
+      print("zainnnnnnn");
 
-      print("📂 Saving User Data to Firestore...");
-
-      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+      // Save user data to Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
         'name': name,
         'email': email,
-        'phone': phone,
-        'uid': userCredential.user!.uid,
       });
 
-      print("✅ User Data Saved to Firestore!");
-
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("User Account Created Successfully!")),
+        const SnackBar(content: Text("User Account Created")),
       );
+      Navigator.pushNamed(context, '/login');
 
+      // Clear input fields
       nameController.clear();
       emailController.clear();
       passwordController.clear();
-      phoneController.clear();
 
+      // Navigate to login screen
     } on FirebaseAuthException catch (e) {
-      print("❌ FirebaseAuth Error: ${e.code}");
-
-      String errorMessage = "An error occurred.";
       if (e.code == 'weak-password') {
-        errorMessage = "The password is too weak.";
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("The password provided is too weak.")),
+        );
       } else if (e.code == 'email-already-in-use') {
-        errorMessage = "This email is already in use.";
-      } else if (e.code == 'invalid-email') {
-        errorMessage = "Invalid email format.";
-      } else {
-        errorMessage = e.message ?? "Something went wrong.";
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("The account already exists for that email.")),
+        );
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
     } catch (e) {
-      print("❌ Unexpected Error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("An unexpected error occurred.")),
-      );
+      print(e);
     }
   }
 
@@ -108,6 +93,7 @@ class _SignupState extends State<Signup> {
         child: ListView(
           padding: const EdgeInsets.all(10),
           children: [
+            // Name input field
             TextField(
               controller: nameController,
               decoration: const InputDecoration(
@@ -116,6 +102,8 @@ class _SignupState extends State<Signup> {
               ),
             ),
             const SizedBox(height: 10),
+
+            // Email input field
             TextField(
               controller: emailController,
               decoration: const InputDecoration(
@@ -124,6 +112,8 @@ class _SignupState extends State<Signup> {
               ),
             ),
             const SizedBox(height: 10),
+
+            // Password input field
             TextField(
               controller: passwordController,
               obscureText: true,
@@ -132,11 +122,132 @@ class _SignupState extends State<Signup> {
                 border: OutlineInputBorder(),
               ),
             ),
-           
             const SizedBox(height: 20),
+
+            // Sign-up button
             ElevatedButton(
-              onPressed: signUpUser,
+              onPressed: () {
+                signUpUser();
+              },
               child: const Text("Sign Up"),
+            ),
+
+            // Link to Login page
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              child: const Text("Already have an account? Login"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class Login extends StatefulWidget {
+  const Login({super.key});
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  Future<void> loginUser() async {
+    String email = emailController.text;
+    String password = passwordController.text;
+
+    // Validate input fields
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("All fields are required!")),
+      );
+      return;
+    }
+
+    // Basic email validation
+    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        .hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a valid email address!")),
+      );
+      return;
+    }
+
+    try {
+      var signInWithEmailAndPassword = FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final userCredential =
+          await signInWithEmailAndPassword;
+
+      print("<<<<<object>>>>>");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Login Successful!")));
+      Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No user found for that email.")),
+        );
+      } else if (e.code == 'wrong-password') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Wrong password provided.")),
+        );
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Login")),
+      body: Center(
+        child: ListView(
+          padding: const EdgeInsets.all(10),
+          children: [
+            // Email input field
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                labelText: "Email",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Password input field
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: "Password",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Login button
+            ElevatedButton(
+              onPressed: () {
+                loginUser();
+              },
+              child: const Text("Login"),
+            ),
+
+            // Link to Signup page
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/');
+              },
+              child: const Text("Don't have an account? Sign Up"),
             ),
           ],
         ),
