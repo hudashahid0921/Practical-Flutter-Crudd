@@ -13,6 +13,10 @@ class _AddMedicineState extends State<AddMedicine> {
   final TextEditingController _medicineDescController = TextEditingController();
   final TextEditingController _medicinePriceController = TextEditingController();
   final CollectionReference medicines = FirebaseFirestore.instance.collection('AddMedicine');
+<<<<<<< HEAD
+=======
+  String? documentId;
+>>>>>>> 0b67856da7036d02039369f6754004ec784a435f
 
   bool _isLoading = false; // ✅ Loading state
 
@@ -39,6 +43,7 @@ class _AddMedicineState extends State<AddMedicine> {
     );
   }
 
+<<<<<<< HEAD
   Future<void> addMedicine() async {
     String medicineTitle = _medicineNameController.text.trim();
     String desc = _medicineDescController.text.trim();
@@ -65,6 +70,56 @@ class _AddMedicineState extends State<AddMedicine> {
         'Description': desc,
         'Price': price
       });
+=======
+  Future<void> _loadMedicineData() async {
+    DocumentSnapshot doc = await medicines.doc(documentId).get();
+    if (doc.exists) {
+      setState(() {
+        _medicineNameController.text = doc["Title"];
+        _medicineDescController.text = doc["Description"];
+        _medicinePriceController.text = doc["Price"].toString();
+      });
+    }
+  }
+
+  Future<void> addOrUpdateMedicine() async {
+    if (_medicineNameController.text.isEmpty ||
+        _medicineDescController.text.isEmpty ||
+        _medicinePriceController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("All fields are required!")),
+      );
+      return;
+    }
+
+    int? price = int.tryParse(_medicinePriceController.text);
+    if (price == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid price! Enter a valid number.")),
+      );
+      return;
+    }
+
+    if (documentId == null) {
+      await medicines.add({
+        'Title': _medicineNameController.text,
+        'Description': _medicineDescController.text,
+        'Price': price,
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Medicine added successfully!")),
+      );
+    } else {
+      await medicines.doc(documentId).update({
+        'Title': _medicineNameController.text,
+        'Description': _medicineDescController.text,
+        'Price': price,
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Medicine updated successfully!")),
+      );
+    }
+>>>>>>> 0b67856da7036d02039369f6754004ec784a435f
 
       _showAlert("Medicine added successfully!", shouldGoBack: true);
     } catch (error) {
@@ -79,9 +134,18 @@ class _AddMedicineState extends State<AddMedicine> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+<<<<<<< HEAD
       appBar: AppBar(title: const Text("Add Medicine")),
       body: Center(
         child: ListView(
+=======
+      appBar: AppBar(
+        title: Text(documentId == null ? "Add Medicine" : "Update Medicine"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+>>>>>>> 0b67856da7036d02039369f6754004ec784a435f
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
