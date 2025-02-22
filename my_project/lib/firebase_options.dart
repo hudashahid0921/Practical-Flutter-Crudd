@@ -47,29 +47,29 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCccV2Z9jeutx_u52ljneQGZsGqhMv5O3w',
-    appId: '1:1084187943712:web:86e3def96a9a43dbc1ed45',
-    messagingSenderId: '1084187943712',
-    projectId: 'practical-flutter-crud',
-    authDomain: 'practical-flutter-crud.firebaseapp.com',
-    storageBucket: 'practical-flutter-crud.firebasestorage.app',
+    apiKey: 'AIzaSyBm_Zl_fAHyKKpvtk6eSe9UteuCkUk9Et4',
+    appId: '1:213230951147:web:b98bd787a3b3cee3237cae',
+    messagingSenderId: '213230951147',
+    projectId: 'practical-flutter-crud-ca259',
+    authDomain: 'practical-flutter-crud-ca259.firebaseapp.com',
+    storageBucket: 'practical-flutter-crud-ca259.firebasestorage.app',
+    measurementId: 'G-20KM36Z70N',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCq-tmlmlbsYrXr7USxoZkoiOxyR2rmO0Q',
-    appId: '1:1084187943712:android:e30aee97dfc3e76ec1ed45',
-    messagingSenderId: '1084187943712',
-    projectId: 'practical-flutter-crud',
-    storageBucket: 'practical-flutter-crud.firebasestorage.app',
+    apiKey: 'AIzaSyB3_z2rgHIR_TB9OneONppTq9CX4i8L3vE',
+    appId: '1:213230951147:android:fa6843d6c0589879237cae',
+    messagingSenderId: '213230951147',
+    projectId: 'practical-flutter-crud-ca259',
+    storageBucket: 'practical-flutter-crud-ca259.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBiUluDDHkKtlfz9D1pvg7B7kTgbyde70c',
-    appId: '1:1084187943712:ios:600c598a7c63802fc1ed45',
-    messagingSenderId: '1084187943712',
-    projectId: 'practical-flutter-crud',
-    storageBucket: 'practical-flutter-crud.firebasestorage.app',
+    apiKey: 'AIzaSyDQDPp6CWrO_pLkwx3uZTS9rI_fC7ZyHWg',
+    appId: '1:213230951147:ios:a55192209b1b746b237cae',
+    messagingSenderId: '213230951147',
+    projectId: 'practical-flutter-crud-ca259',
+    storageBucket: 'practical-flutter-crud-ca259.firebasestorage.app',
     iosBundleId: 'com.example.myProject',
   );
-
 }
