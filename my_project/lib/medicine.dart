@@ -98,13 +98,10 @@ class _MyMedicineState extends State<MyMedicine> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-<<<<<<< HEAD
-=======
                         icon: const Icon(Icons.info_outline, color: Colors.blue),
                         onPressed: () => showMedicineInfo(doc.id), // Show info dialog
                       ),
                       IconButton(
->>>>>>> 0b67856da7036d02039369f6754004ec784a435f
                         icon: const Icon(Icons.edit, color: Colors.orange),
                         onPressed: () => updateMedicine(doc.id),
                       ),

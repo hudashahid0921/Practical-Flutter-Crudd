@@ -1,31 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:my_project/addmedicine.dart';
 import 'package:my_project/auth.dart';
 import 'package:my_project/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
-=======
-import 'package:firebase_core/firebase_core.dart';
-import 'package:my_project/addmedicine.dart';
-import 'package:my_project/auth.dart';
-import 'package:my_project/firebase_options.dart';
-import 'package:my_project/medicine.dart'; 
->>>>>>> 0b67856da7036d02039369f6754004ec784a435f
 import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-<<<<<<< HEAD
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
-=======
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(MyApp());
->>>>>>> 0b67856da7036d02039369f6754004ec784a435f
 }
 
 class MyApp extends StatelessWidget {
@@ -34,35 +19,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-<<<<<<< HEAD
       debugShowCheckedModeBanner: false,
       title: 'Medicine App',
-=======
-      title: 'Medicine',
->>>>>>> 0b67856da7036d02039369f6754004ec784a435f
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-<<<<<<< HEAD
       home: Signup(),
       routes: {
         '/addmedicine': (context) => const AddMedicine(),
         '/login': (context) => const Login(),
         '/MedicineScreen': (context) => const MedicineScreen(),
         '/Signup': (context) => const Signup(),
-=======
-      debugShowCheckedModeBanner: false,
-
-      // Home screen (initial screen when app starts)
-      home: FirebaseAuth.instance.currentUser == null ? Signup() : MyMedicine(),
-
-      // Routes setup
-      routes: {
-        '/addmedicine': (context) => const AddMedicine(),
-         '/login': (context) => const Login(),
-        '/home': (context) => const MyMedicine(), // Home screen after login
->>>>>>> 0b67856da7036d02039369f6754004ec784a435f
       },
     );
   }
