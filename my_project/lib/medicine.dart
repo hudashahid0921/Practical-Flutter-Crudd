@@ -23,6 +23,37 @@ class _MyMedicineState extends State<MyMedicine> {
     Navigator.pushNamed(context, '/addmedicine', arguments: documentId);
   }
 
+  void showMedicineInfo(String documentId) async {
+    DocumentSnapshot doc = await FirebaseFirestore.instance.collection('AddMedicine').doc(documentId).get();
+    if (doc.exists) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Medicine Details"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("📝 Name: ${doc["Title"]}"),
+                const SizedBox(height: 5),
+                Text("📄 Description: ${doc["Description"]}"),
+                const SizedBox(height: 5),
+                Text("💰 Price: \$${doc["Price"]}"),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,6 +97,10 @@ class _MyMedicineState extends State<MyMedicine> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      IconButton(
+                        icon: const Icon(Icons.info_outline, color: Colors.blue),
+                        onPressed: () => showMedicineInfo(doc.id), // Show info dialog
+                      ),
                       IconButton(
                         icon: const Icon(Icons.edit, color: Colors.orange),
                         onPressed: () => updateMedicine(doc.id),

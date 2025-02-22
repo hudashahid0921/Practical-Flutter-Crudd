@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 FirebaseAuth auth = FirebaseAuth.instance;
+
 class Signup extends StatefulWidget {
   const Signup({super.key});
 
@@ -37,16 +39,12 @@ class _SignupState extends State<Signup> {
     }
 
     try {
-
-      // print("zainnnnnnn");
       // Create user with email and password
       final userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-
-      print("zainnnnnnn");
 
       // Save user data to Firestore
       await FirebaseFirestore.instance
@@ -61,7 +59,6 @@ class _SignupState extends State<Signup> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("User Account Created")),
       );
-      Navigator.pushNamed(context, '/login');
 
       // Clear input fields
       nameController.clear();
@@ -69,6 +66,8 @@ class _SignupState extends State<Signup> {
       passwordController.clear();
 
       // Navigate to login screen
+      Navigator.pushNamed(context, '/login');
+
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -186,7 +185,6 @@ class _LoginState extends State<Login> {
       final userCredential =
           await signInWithEmailAndPassword;
 
-      print("<<<<<object>>>>>");
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Login Successful!")));
       Navigator.pushReplacementNamed(context, '/home');

@@ -12,7 +12,7 @@ class _AddMedicineState extends State<AddMedicine> {
   final TextEditingController _medicineNameController = TextEditingController();
   final TextEditingController _medicineDescController = TextEditingController();
   final TextEditingController _medicinePriceController = TextEditingController();
-  final CollectionReference medicines = FirebaseFirestore.instance.collection('AddMedicine'); // ✅ Correct database name
+  final CollectionReference medicines = FirebaseFirestore.instance.collection('AddMedicine');
   String? documentId;
 
   @override
@@ -77,45 +77,11 @@ class _AddMedicineState extends State<AddMedicine> {
     Navigator.pop(context);
   }
 
-  void showMedicineInfo() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Medicine Details"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("📝 Name: ${_medicineNameController.text}"),
-              const SizedBox(height: 5),
-              Text("📄 Description: ${_medicineDescController.text}"),
-              const SizedBox(height: 5),
-              Text("💰 Price: \$${_medicinePriceController.text}"),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(documentId == null ? "Add Medicine" : "Update Medicine"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline, size: 28), // ℹ️ Info icon
-            onPressed: showMedicineInfo, // Show details in dialog box
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
