@@ -7,6 +7,7 @@ import 'package:my_project/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -87,36 +88,138 @@ class _MedicineScreenState extends State<MedicineScreen> {
     }
   }
 
-  void _showUserProfile() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("User Profile"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.account_circle, size: 50, color: Colors.blue),
-              const SizedBox(height: 10),
-              Text("Name: $userName",
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text("Email: $userEmail"),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                  Navigator.pushReplacementNamed(context, '/login');
-                },
-                child: const Text("Logout"),
-              ),
-            ],
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Available Medicines", style: TextStyle(fontSize: 24)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add, size: 30),
+            onPressed: () {
+              Navigator.pushNamed(context, '/addmedicine');
+            },
           ),
-        );
-      },
+          _buildProfileDropdown(),
+        ],
+      ),
+      body: StreamBuilder(
+        stream: medicineCollection.snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: SpinKitDancingSquare(color: Colors.blueAccent));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No medicines available!"));
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(10),
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) {
+              var doc = snapshot.data!.docs[index];
+              return Card(
+                child: ListTile(
+                  leading: const Icon(Icons.medication, color: Colors.blue, size: 30),
+                  title: Text(doc['Title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(doc['Description'].toString()),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.info, color: Colors.green),
+                        onPressed: () => _showMedicineDetails(
+                            doc['Title'], doc['Description'], doc['Price'].toString()),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.orange),
+                        onPressed: () => _editMedicineDialog(
+                            doc.id, doc['Title'], doc['Description'], doc['Price'].toString()),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => medicineCollection.doc(doc.id).delete(),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
-  void _showMedicineDetails(String title, dynamic description, dynamic price) {
+  /// 🔹 **Stylish Profile Dropdown**
+  Widget _buildProfileDropdown() {
+    return PopupMenuButton<int>(
+      icon: CircleAvatar(
+        backgroundColor: Colors.blueAccent,
+        radius: 18,
+        child: Text(
+          userName.isNotEmpty ? userName[0].toUpperCase() : '?',
+          style: const TextStyle(fontSize: 18, color: Colors.white),
+        ),
+      ),
+      offset: const Offset(0, 50),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      itemBuilder: (context) => [
+        PopupMenuItem<int>(
+          value: 0,
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.blueAccent,
+                child: Text(
+                  userName.isNotEmpty ? userName[0].toUpperCase() : '?',
+                  style: const TextStyle(fontSize: 24, color: Colors.white),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                userName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                userEmail,
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const Divider(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  child: const Text("Logout", style: TextStyle(fontSize: 16)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 🔹 **Displays Medicine Details**
+  void _showMedicineDetails(String title, String description, String price) {
     showDialog(
       context: context,
       builder: (context) {
@@ -126,9 +229,9 @@ class _MedicineScreenState extends State<MedicineScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Description: ${description.toString()}"),
+              Text("Description: $description"),
               const SizedBox(height: 10),
-              Text("Price: ${price.toString()}"),
+              Text("Price: $price"),
             ],
           ),
           actions: [
@@ -142,14 +245,11 @@ class _MedicineScreenState extends State<MedicineScreen> {
     );
   }
 
-  void _editMedicineDialog(
-      String docId, String title, String description, String price) {
-    TextEditingController titleController =
-        TextEditingController(text: title);
-    TextEditingController descriptionController =
-        TextEditingController(text: description);
-    TextEditingController priceController =
-        TextEditingController(text: price);
+  /// 🔹 **Edit Medicine Dialog**
+  void _editMedicineDialog(String docId, String title, String description, String price) {
+    TextEditingController titleController = TextEditingController(text: title);
+    TextEditingController descriptionController = TextEditingController(text: description);
+    TextEditingController priceController = TextEditingController(text: price);
 
     showDialog(
       context: context,
@@ -181,10 +281,7 @@ class _MedicineScreenState extends State<MedicineScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                await FirebaseFirestore.instance
-                    .collection('AddMedicine')
-                    .doc(docId)
-                    .update({
+                await FirebaseFirestore.instance.collection('AddMedicine').doc(docId).update({
                   'Title': titleController.text.trim(),
                   'Description': descriptionController.text.trim(),
                   'Price': priceController.text.trim(),
@@ -200,74 +297,6 @@ class _MedicineScreenState extends State<MedicineScreen> {
           ],
         );
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title:
-            const Text("Available Medicines", style: TextStyle(fontSize: 24)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, size: 30),
-            onPressed: () {
-              Navigator.pushNamed(context, '/addmedicine');
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.account_circle, size: 35),
-            onPressed: _showUserProfile,
-          ),
-        ],
-      ),
-      body: StreamBuilder(
-        stream: medicineCollection.snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: SpinKitDancingSquare(color: Colors.blueAccent));
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No medicines available!"));
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(10),
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              var doc = snapshot.data!.docs[index];
-              return Card(
-                child: ListTile(
-                  leading: const Icon(Icons.medication,
-                      color: Colors.blue, size: 30),
-                  title: Text(doc['Title'],
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(doc['Description'].toString()),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                          icon: const Icon(Icons.info, color: Colors.green),
-                          onPressed: () => _showMedicineDetails(
-                              doc['Title'], doc['Description'], doc['Price'].toString())),
-                      IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.orange),
-                          onPressed: () => _editMedicineDialog(
-                              doc.id, doc['Title'], doc['Description'], doc['Price'].toString())),
-                      IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () =>
-                              medicineCollection.doc(doc.id).delete()),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
     );
   }
 }
